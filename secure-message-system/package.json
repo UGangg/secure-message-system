@@ -8,7 +8,8 @@
     "bob": "ts-node src/bob.ts",
     "build": "tsc",
     "keygen": "ts-node src/keygen.ts",
-    "aes": "ts-node src/testAES.ts"
+    "aes": "ts-node src/testAES.ts",
+    "envelope": "ts-node src/testEnvelope.ts"
   },
   "keywords": [],
   "author": "",

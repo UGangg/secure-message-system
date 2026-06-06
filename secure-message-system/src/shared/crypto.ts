@@ -5,6 +5,8 @@ import {
   randomBytes,
   createCipheriv,
   createDecipheriv,
+  publicEncrypt,
+  privateDecrypt,
 } from "crypto";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
@@ -62,4 +64,18 @@ export function decryptAES(encryptedText: string, key: Buffer, iv: Buffer) {
   decrypted += decipher.final("utf-8");
 
   return decrypted;
+}
+
+export function encryptWithPublicKey(data: Buffer, publicKey: string) {
+  const encryptedData = publicEncrypt(publicKey, data);
+  return encryptedData.toString("base64");
+}
+
+export function decryptWithPrivateKey(encryptedData: string, privateKey: string) {
+  const decryptedData = privateDecrypt(
+    privateKey,
+    Buffer.from(encryptedData, "base64")
+  );
+
+  return decryptedData;
 }
