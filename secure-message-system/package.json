@@ -7,7 +7,7 @@
     "alice": "ts-node src/alice.ts",
     "bob": "ts-node src/bob.ts",
     "build": "tsc",
-    " keygen": "ts-node src/keygen.ts"
+    "keygen": "ts-node src/keygen.ts"
   },
   "keywords": [],
   "author": "",
