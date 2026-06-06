@@ -6,7 +6,8 @@
   "scripts": {
     "alice": "ts-node src/alice.ts",
     "bob": "ts-node src/bob.ts",
-    "build": "tsc"
+    "build": "tsc",
+    " keygen": "ts-node src/keygen.ts"
   },
   "keywords": [],
   "author": "",
