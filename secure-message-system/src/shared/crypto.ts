@@ -1,5 +1,11 @@
 // src/shared/crypto.ts
-import { generateKeyPairSync } from "crypto";
+
+import {
+  generateKeyPairSync,
+  randomBytes,
+  createCipheriv,
+  createDecipheriv,
+} from "crypto";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
 
@@ -30,4 +36,30 @@ export function saveKeyToFile(filePath: string, key: string) {
   }
 
   writeFileSync(filePath, key, "utf-8");
+}
+
+export function generateAESKey() {
+  return randomBytes(32);
+}
+
+export function generateIV() {
+  return randomBytes(16);
+}
+
+export function encryptAES(plainText: string, key: Buffer, iv: Buffer) {
+  const cipher = createCipheriv("aes-256-cbc", key, iv);
+
+  let encrypted = cipher.update(plainText, "utf-8", "base64");
+  encrypted += cipher.final("base64");
+
+  return encrypted;
+}
+
+export function decryptAES(encryptedText: string, key: Buffer, iv: Buffer) {
+  const decipher = createDecipheriv("aes-256-cbc", key, iv);
+
+  let decrypted = decipher.update(encryptedText, "base64", "utf-8");
+  decrypted += decipher.final("utf-8");
+
+  return decrypted;
 }
