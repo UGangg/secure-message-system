@@ -8,8 +8,10 @@ function main() {
   const bobPublicKey = readFileSync("keys/bob-public.pem", "utf-8");
   const bobPrivateKey = readFileSync("keys/bob-private.pem", "utf-8");
 
+  //대칭키 생성
   const aesKey = generateAESKey();
 
+  //전자봉투 생성
   const encryptedAESKey = createEnvelope(aesKey, bobPublicKey);
   const decryptedAESKey = openEnvelope(encryptedAESKey, bobPrivateKey);
 
