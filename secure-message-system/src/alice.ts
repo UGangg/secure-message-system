@@ -7,6 +7,7 @@ import {
   encryptAES,
   generateAESKey,
   generateIV,
+  createSHA256Hash,
 } from "./shared/crypto";
 import { saveMessageToFile } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
@@ -34,6 +35,7 @@ async function main() {
 
   const encryptedMessage = encryptAES(plainText, aesKey, iv);
   const encryptedAESKey = createEnvelope(aesKey, bobPublicKey);
+  const messageHash = createSHA256Hash(plainText);
 
   const secureMessage: SecureMessage = {
     sender: "alice",
@@ -41,6 +43,7 @@ async function main() {
     encryptedMessage,
     encryptedAESKey,
     iv: iv.toString("base64"),
+    messageHash,
     createdAt: new Date().toISOString(),
   };
 
@@ -50,6 +53,8 @@ async function main() {
   console.log("저장 위치: messages/alice-to-bob.json");
   console.log("\n암호화된 메시지:");
   console.log(encryptedMessage);
+  console.log("\n메시지 해시: ");
+  console.log(messageHash);
 
   rl.close();
 }

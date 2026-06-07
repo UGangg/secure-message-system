@@ -7,6 +7,7 @@ import {
   createDecipheriv,
   publicEncrypt,
   privateDecrypt,
+  createHash,
 } from "crypto";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
@@ -78,4 +79,8 @@ export function decryptWithPrivateKey(encryptedData: string, privateKey: string)
   );
 
   return decryptedData;
+}
+
+export function createSHA256Hash(data: string) {
+  return createHash("sha256").update(data, "utf-8").digest("hex");
 }
