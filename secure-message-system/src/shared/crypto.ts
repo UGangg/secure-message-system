@@ -8,6 +8,8 @@ import {
   publicEncrypt,
   privateDecrypt,
   createHash,
+  sign,
+  verify,
 } from "crypto";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { dirname } from "path";
@@ -83,4 +85,18 @@ export function decryptWithPrivateKey(encryptedData: string, privateKey: string)
 
 export function createSHA256Hash(data: string) {
   return createHash("sha256").update(data, "utf-8").digest("hex");
+}
+
+export function createDigitalSignature(data: string, privateKey: string) {
+  const signature = sign("sha256", Buffer.from(data, "utf-8"), privateKey);
+  return signature.toString("base64");
+}
+
+export function verifyDigitalSignature(data: string, signature: string, publicKey: string) {
+  return verify(
+    "sha256",
+    Buffer.from(data, "utf-8"),
+    publicKey,
+    Buffer.from(signature, "base64")
+  );
 }

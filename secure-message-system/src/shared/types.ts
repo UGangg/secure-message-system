@@ -7,5 +7,6 @@ export interface SecureMessage {
   encryptedAESKey: string;
   iv: string;
   messageHash: string;
+  signature: string;
   createdAt: string;
 }

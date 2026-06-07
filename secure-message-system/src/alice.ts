@@ -8,9 +8,11 @@ import {
   generateAESKey,
   generateIV,
   createSHA256Hash,
+  createDigitalSignature,
 } from "./shared/crypto";
 import { saveMessageToFile } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
+import { create } from "domain";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -27,6 +29,7 @@ function askQuestion(question: string): Promise<string> {
 
 async function main() {
   const bobPublicKey = readFileSync("keys/bob-public.pem", "utf-8");
+  const alicePrivateKey = readFileSync("keys/alice-private.pem", "utf-8");
 
   const plainText = await askQuestion("Bob에게 보낼 메시지를 입력하세요: ");
 
@@ -36,6 +39,7 @@ async function main() {
   const encryptedMessage = encryptAES(plainText, aesKey, iv);
   const encryptedAESKey = createEnvelope(aesKey, bobPublicKey);
   const messageHash = createSHA256Hash(plainText);
+  const signature = createDigitalSignature(messageHash, alicePrivateKey);
 
   const secureMessage: SecureMessage = {
     sender: "alice",
@@ -44,6 +48,7 @@ async function main() {
     encryptedAESKey,
     iv: iv.toString("base64"),
     messageHash,
+    signature,
     createdAt: new Date().toISOString(),
   };
 
@@ -55,6 +60,8 @@ async function main() {
   console.log(encryptedMessage);
   console.log("\n메시지 해시: ");
   console.log(messageHash);
+  console.log("\n전자서명: ")
+  console.log(signature);
 
   rl.close();
 }

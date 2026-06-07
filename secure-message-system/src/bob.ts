@@ -1,12 +1,17 @@
 // src/bob.ts
 
 import { readFileSync } from "fs";
-import { createSHA256Hash, decryptAES } from "./shared/crypto";
+import { 
+    createSHA256Hash, 
+    decryptAES, 
+    verifyDigitalSignature 
+} from "./shared/crypto";
 import { openEnvelope } from "./shared/envelope";
 import { readMessageFromFile } from "./shared/messageFile";
 
 function main() {
   const bobPrivateKey = readFileSync("keys/bob-private.pem", "utf-8");
+  const alicePublicKey = readFileSync("keys/alice-public.pem", "utf-8");
 
   const secureMessage = readMessageFromFile("messages/alice-to-bob.json");
 
@@ -24,7 +29,12 @@ function main() {
   );
 
   const decryptedMessageHash = createSHA256Hash(decryptedMessage);
-  const isValid = decryptedMessageHash === secureMessage.messageHash;
+  const isMessageValid = decryptedMessageHash === secureMessage.messageHash;
+  const isSignatureValid = verifyDigitalSignature(
+    secureMessage.messageHash,
+    secureMessage.signature,
+    alicePublicKey
+  );
 
   console.log("메시지 수신 완료");
   console.log(`보낸 사람: ${secureMessage.sender}`);
@@ -34,8 +44,11 @@ function main() {
   console.log("\n복호화된 메시지:");
   console.log(decryptedMessage);
 
-  console.log("\n무결성 검증 결과");
-  console.log(isValid ? "위변조 없음" : "위변조 의심");
+  console.log("\n무결성 검증 결과: ");
+  console.log(isMessageValid ? "위변조 없음" : "위변조 의심");
+
+  console.log("\n전자서명 검증 결과: ");
+  console.log(isSignatureValid ? "송신자 인증 성공" : "송신자 인증 실패");
 }
 
 main();
