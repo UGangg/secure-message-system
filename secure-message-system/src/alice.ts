@@ -12,7 +12,7 @@ import {
     decryptAES, 
     verifyDigitalSignature 
 } from "./shared/crypto";
-import { saveMessageToFile, readMessageFromFile  } from "./shared/messageFile";
+import { saveMessageToDirectory, readMessageFromFile  } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
 
 const rl = readline.createInterface({
@@ -42,26 +42,26 @@ function readMessageFromBob() {
   const secureMessage  = readMessageFromFile(messagePath);
 
   const aesKey = openEnvelope(secureMessage .encryptedAESKey, alicePrivateKey);
-  const iv = Buffer.from(secureMessage .iv, "base64");
+  const iv = Buffer.from(secureMessage.iv, "base64");
 
-  const decryptedReply = decryptAES(secureMessage .encryptedMessage, aesKey, iv);
+  const decryptedMessage = decryptAES(secureMessage.encryptedMessage, aesKey, iv);
 
-  const replyHash = createSHA256Hash(decryptedReply);
-  const isMessageValid = replyHash === secureMessage .messageHash;
+  const messageHash  = createSHA256Hash(decryptedMessage);
+  const isMessageValid = messageHash === secureMessage .messageHash;
 
   const isSignatureValid = verifyDigitalSignature(
-    secureMessage .messageHash,
-    secureMessage .signature,
+    secureMessage.messageHash,
+    secureMessage.signature,
     bobPublicKey
   );
 
   console.log("\n메시지 수신 완료");
-  console.log(`보낸 사람: ${secureMessage .sender}`);
-  console.log(`받는 사람: ${secureMessage .receiver}`);
-  console.log(`전송 시간: ${secureMessage .createdAt}`);
+  console.log(`보낸 사람: ${secureMessage.sender}`);
+  console.log(`받는 사람: ${secureMessage.receiver}`);
+  console.log(`전송 시간: ${secureMessage.createdAt}`);
 
   console.log("\n복호화된 답장:");
-  console.log(decryptedReply);
+  console.log(decryptedMessage);
 
   console.log("\n무결성 검증 결과:");
   console.log(isMessageValid ? "위변조 없음" : "위변조 의심");
@@ -95,7 +95,7 @@ async function sendMessageToBob() {
     createdAt: new Date().toISOString(),
   };
 
-  saveMessageToFile("messages/alice-to-bob.json", secureMessage);
+  const savedPath = saveMessageToDirectory("messages/alice-to-bob", secureMessage);
 
   console.log("\n메시지 전송 완료");
   console.log("저장 위치: messages/alice-to-bob.json");

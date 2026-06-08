@@ -1,0 +1,10 @@
+{
+  "sender": "alice",
+  "receiver": "bob",
+  "encryptedMessage": "hJD7RwOC38+IvOhThjO0eA==",
+  "encryptedAESKey": "GLeEgaOxRf+ABu5ygBAAa3fHpXqgkpJNnx80jvU4DAzB12Ed6xQ8NwdiOZq+elIRUk6/nWJtIKmLQ47SNaW6baE4ZLNXX9EDBWQkJlNBA+V+wiJbaDR9mW4/tDcAcKxXwgrAGoMdgljJ0YadzBrM1MsVWiYPe9cPKiHWmsN/JsnxL3L4DfuklP59cl0QAkuun2KTGbQFU3NxnQDVcBuwgKfOl3TrB/PCeNu8bztoMqmqXyDLDrqJefa918Zj3ZHL/jcyczb3Tmyq38+T9iTdeL7KJNpn7Ir2Ysiic5lpzq5ibhZRcqRFPj2mAPLroQxFAU3BLUpaRd0cNYpaGSnKHQ==",
+  "iv": "O920sKUfhTkYcA8bLCkkAQ==",
+  "messageHash": "4e07408562bedb8b60ce05c1decfe3ad16b72230967de01f640b7e4729b49fce",
+  "signature": "uPLRaA+ArRduKt8f/Lpl1XdjNNISc/Un5zWsG7MOUdK/sT09twMeO3V4NfO0S/2XFsdpyHLL4+3q5ZclMelKxUOMWDphj47V+z644DqrbK2tFYMPcCwRzLbZ0qh/x3zo07jEbiTbwxxz3TnXeKerMBDMbuUmBhSiCvKCu5mZk1K2Vu3iqPBpudzXc011rRoUWvajFX2BDCGFx6/ZCPlnhsBJ9ugcPWMt79hI7qm/XVAH0mNJIQG3DLcpkga/NoCm90iCRMGR2vFdTIhKvSUR4kT23qeQ6kTGSZeNY1wEEfE4EVO14dJBTgpCgGzc+3RPHt6zrUJtsHlq9xCkYJavSg==",
+  "createdAt": "2026-06-08T11:17:26.297Z"
+}

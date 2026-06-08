@@ -12,7 +12,7 @@ import {
   verifyDigitalSignature,
 } from "./shared/crypto";
 import { openEnvelope, createEnvelope } from "./shared/envelope";
-import { readMessageFromFile, saveMessageToFile } from "./shared/messageFile";
+import { readMessageFromFile, saveMessageToDirectory } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
 
 const rl = readline.createInterface({
@@ -95,7 +95,7 @@ async function sendMessageToAlice() {
     createdAt: new Date().toISOString(),
   };
 
-  saveMessageToFile("messages/bob-to-alice.json", secureMessage);
+  const savedPath = saveMessageToDirectory("messages/bob-to-alice", secureMessage);
 
   console.log("\n메시지 전송 완료");
   console.log("저장 위치: messages/bob-to-alice.json");
