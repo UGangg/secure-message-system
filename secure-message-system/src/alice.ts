@@ -1,18 +1,19 @@
 // src/alice.ts
 
-import { readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import readline from "readline";
-import { createEnvelope } from "./shared/envelope";
+import { createEnvelope, openEnvelope  } from "./shared/envelope";
 import {
-  encryptAES,
-  generateAESKey,
-  generateIV,
-  createSHA256Hash,
-  createDigitalSignature,
+    encryptAES,
+    generateAESKey,
+    generateIV,
+    createDigitalSignature,
+    createSHA256Hash,
+    decryptAES, 
+    verifyDigitalSignature 
 } from "./shared/crypto";
-import { saveMessageToFile } from "./shared/messageFile";
+import { saveMessageToFile, readMessageFromFile  } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
-import { create } from "domain";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -25,6 +26,48 @@ function askQuestion(question: string): Promise<string> {
       resolve(answer);
     });
   });
+}
+
+function readReplyFromBob() {
+  const replyPath = "messages/bob-to-alice.json";
+
+  if (!existsSync(replyPath)) {
+    console.log("\nBob의 답장 파일이 아직 없습니다.");
+    return;
+  }
+
+  const alicePrivateKey = readFileSync("keys/alice-private.pem", "utf-8");
+  const bobPublicKey = readFileSync("keys/bob-public.pem", "utf-8");
+
+  const replyMessage = readMessageFromFile(replyPath);
+
+  const aesKey = openEnvelope(replyMessage.encryptedAESKey, alicePrivateKey);
+  const iv = Buffer.from(replyMessage.iv, "base64");
+
+  const decryptedReply = decryptAES(replyMessage.encryptedMessage, aesKey, iv);
+
+  const replyHash = createSHA256Hash(decryptedReply);
+  const isMessageValid = replyHash === replyMessage.messageHash;
+
+  const isSignatureValid = verifyDigitalSignature(
+    replyMessage.messageHash,
+    replyMessage.signature,
+    bobPublicKey
+  );
+
+  console.log("\nBob의 답장 수신 완료");
+  console.log(`보낸 사람: ${replyMessage.sender}`);
+  console.log(`받는 사람: ${replyMessage.receiver}`);
+  console.log(`전송 시간: ${replyMessage.createdAt}`);
+
+  console.log("\n복호화된 답장:");
+  console.log(decryptedReply);
+
+  console.log("\n무결성 검증 결과:");
+  console.log(isMessageValid ? "위변조 없음" : "위변조 의심");
+
+  console.log("\n전자서명 검증 결과:");
+  console.log(isSignatureValid ? "송신자 인증 성공" : "송신자 인증 실패");
 }
 
 async function main() {
@@ -62,6 +105,14 @@ async function main() {
   console.log(messageHash);
   console.log("\n전자서명: ")
   console.log(signature);
+
+  const shouldReadReply = await askQuestion(
+    "\nBob의 답장을 확인할까요? (y/n): "
+  );
+
+  if (shouldReadReply.toLowerCase() === "y") {
+    readReplyFromBob();
+  }
 
   rl.close();
 }
