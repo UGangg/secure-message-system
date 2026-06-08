@@ -3,15 +3,25 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname } from "path";
 import { SecureMessage } from "./types";
+import { ENCODING } from "./constants";
 
-export function saveMessageToFile(filePath: string, message: SecureMessage) {
+function ensureDirectoryExists(filePath: string): void {
   const dirPath = dirname(filePath);
 
   if (!existsSync(dirPath)) {
     mkdirSync(dirPath, { recursive: true });
   }
+}
 
-  writeFileSync(filePath, JSON.stringify(message, null, 2), "utf-8");
+export function saveMessageToFile(
+  filePath: string,
+  message: SecureMessage
+): string {
+  ensureDirectoryExists(filePath);
+
+  writeFileSync(filePath, JSON.stringify(message, null, 2), ENCODING);
+
+  return filePath;
 }
 
 export function readMessageFromFile(filePath: string): SecureMessage {
@@ -19,6 +29,10 @@ export function readMessageFromFile(filePath: string): SecureMessage {
     throw new Error(`${filePath} 파일이 존재하지 않습니다.`);
   }
 
-  const fileContent = readFileSync(filePath, "utf-8");
-  return JSON.parse(fileContent) as SecureMessage;
+  try {
+    const fileContent = readFileSync(filePath, ENCODING);
+    return JSON.parse(fileContent) as SecureMessage;
+  } catch {
+    throw new Error(`${filePath} 파일을 읽거나 해석할 수 없습니다.`);
+  }
 }

@@ -2,17 +2,16 @@
 
 import { decryptWithPrivateKey, encryptWithPublicKey } from "./crypto";
 
-export function createEnvelope(aesKey: Buffer, receiverPublicKey: string) {
-  const encryptedAESKey = encryptWithPublicKey(aesKey, receiverPublicKey);
-
-  return encryptedAESKey;
+export function createEnvelope(
+  aesKey: Buffer,
+  receiverPublicKey: string
+): string {
+  return encryptWithPublicKey(aesKey, receiverPublicKey);
 }
 
 export function openEnvelope(
   encryptedAESKey: string,
   receiverPrivateKey: string
-) {
-  const aesKey = decryptWithPrivateKey(encryptedAESKey, receiverPrivateKey);
-
-  return aesKey;
+): Buffer {
+  return decryptWithPrivateKey(encryptedAESKey, receiverPrivateKey);
 }
