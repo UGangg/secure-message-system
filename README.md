@@ -57,6 +57,7 @@ src
 ├── keygen.ts         # RSA 키 생성
 │
 └── shared
+    ├── constants.ts  # 반복 사용되는 상수 집합
     ├── crypto.ts     # AES, SHA-256, 전자서명
     ├── envelope.ts   # 전자봉투 생성 및 복호화
     ├── messageFile.ts# 메시지 저장 및 읽기
