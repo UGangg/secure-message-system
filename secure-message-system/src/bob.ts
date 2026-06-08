@@ -12,7 +12,7 @@ import {
   verifyDigitalSignature,
 } from "./shared/crypto";
 import { openEnvelope, createEnvelope } from "./shared/envelope";
-import { readMessageFromFile, saveMessageToDirectory } from "./shared/messageFile";
+import { readMessagesFromDirectory, saveMessageToDirectory } from "./shared/messageFile";
 import { SecureMessage } from "./shared/types";
 
 const rl = readline.createInterface({
@@ -29,9 +29,11 @@ function askQuestion(question: string): Promise<string> {
 }
 
 function readMessageFromAlice() {
-  const messagePath = "messages/alice-to-bob.json";
+  const messageDir = "messages/alice-to-bob";
 
-  if (!existsSync(messagePath)) {
+  const messages = readMessagesFromDirectory(messageDir);
+
+  if (messages.length === 0) {
     console.log("\n확인할 Alice의 메시지가 없습니다.");
     return;
   }
@@ -39,35 +41,37 @@ function readMessageFromAlice() {
   const bobPrivateKey = readFileSync("keys/bob-private.pem", "utf-8");
   const alicePublicKey = readFileSync("keys/alice-public.pem", "utf-8");
 
-  const secureMessage = readMessageFromFile(messagePath);
-
-  const aesKey = openEnvelope(secureMessage.encryptedAESKey, bobPrivateKey);
-  const iv = Buffer.from(secureMessage.iv, "base64");
-
-  const decryptedMessage = decryptAES(secureMessage.encryptedMessage, aesKey, iv);
-
-  const messageHash = createSHA256Hash(decryptedMessage);
-  const isMessageValid = messageHash === secureMessage.messageHash;
-
-  const isSignatureValid = verifyDigitalSignature(
-    secureMessage.messageHash,
-    secureMessage.signature,
-    alicePublicKey
+  const sortedMessages = messages.sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
-  console.log("\n메시지 수신 완료");
-  console.log(`보낸 사람: ${secureMessage.sender}`);
-  console.log(`받는 사람: ${secureMessage.receiver}`);
-  console.log(`전송 시간: ${secureMessage.createdAt}`);
+  console.log("\n===== Alice가 보낸 메시지 목록 =====");
 
-  console.log("\n복호화된 메시지:");
-  console.log(decryptedMessage);
+  sortedMessages.forEach((secureMessage, index) => {
+    const aesKey = openEnvelope(secureMessage.encryptedAESKey, bobPrivateKey);
+    const iv = Buffer.from(secureMessage.iv, "base64");
 
-  console.log("\n무결성 검증 결과:");
-  console.log(isMessageValid ? "위변조 없음" : "위변조 의심");
+    const decryptedMessage = decryptAES(
+      secureMessage.encryptedMessage,
+      aesKey,
+      iv
+    );
 
-  console.log("\n전자서명 검증 결과:");
-  console.log(isSignatureValid ? "송신자 인증 성공" : "송신자 인증 실패");
+    const messageHash = createSHA256Hash(decryptedMessage);
+    const isMessageValid = messageHash === secureMessage.messageHash;
+
+    const isSignatureValid = verifyDigitalSignature(
+      secureMessage.messageHash,
+      secureMessage.signature,
+      alicePublicKey
+    );
+
+    console.log(`\n[${index + 1}] ${secureMessage.sender}: ${decryptedMessage}`);
+    console.log(`시간: ${secureMessage.createdAt}`);
+    console.log(`무결성: ${isMessageValid ? "정상" : "위변조 의심"}`);
+    console.log(`서명: ${isSignatureValid ? "인증 성공" : "인증 실패"}`);
+  });
 }
 
 async function sendMessageToAlice() {
