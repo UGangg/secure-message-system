@@ -28,37 +28,37 @@ function askQuestion(question: string): Promise<string> {
   });
 }
 
-function readReplyFromBob() {
-  const replyPath = "messages/bob-to-alice.json";
+function readMessageFromBob() {
+  const messagePath = "messages/bob-to-alice.json";
 
-  if (!existsSync(replyPath)) {
-    console.log("\nBob의 답장 파일이 아직 없습니다.");
+  if (!existsSync(messagePath)) {
+    console.log("\n확인할 Bob의 메시지가 없습니다.");
     return;
   }
 
   const alicePrivateKey = readFileSync("keys/alice-private.pem", "utf-8");
   const bobPublicKey = readFileSync("keys/bob-public.pem", "utf-8");
 
-  const replyMessage = readMessageFromFile(replyPath);
+  const secureMessage  = readMessageFromFile(messagePath);
 
-  const aesKey = openEnvelope(replyMessage.encryptedAESKey, alicePrivateKey);
-  const iv = Buffer.from(replyMessage.iv, "base64");
+  const aesKey = openEnvelope(secureMessage .encryptedAESKey, alicePrivateKey);
+  const iv = Buffer.from(secureMessage .iv, "base64");
 
-  const decryptedReply = decryptAES(replyMessage.encryptedMessage, aesKey, iv);
+  const decryptedReply = decryptAES(secureMessage .encryptedMessage, aesKey, iv);
 
   const replyHash = createSHA256Hash(decryptedReply);
-  const isMessageValid = replyHash === replyMessage.messageHash;
+  const isMessageValid = replyHash === secureMessage .messageHash;
 
   const isSignatureValid = verifyDigitalSignature(
-    replyMessage.messageHash,
-    replyMessage.signature,
+    secureMessage .messageHash,
+    secureMessage .signature,
     bobPublicKey
   );
 
-  console.log("\nBob의 답장 수신 완료");
-  console.log(`보낸 사람: ${replyMessage.sender}`);
-  console.log(`받는 사람: ${replyMessage.receiver}`);
-  console.log(`전송 시간: ${replyMessage.createdAt}`);
+  console.log("\n메시지 수신 완료");
+  console.log(`보낸 사람: ${secureMessage .sender}`);
+  console.log(`받는 사람: ${secureMessage .receiver}`);
+  console.log(`전송 시간: ${secureMessage .createdAt}`);
 
   console.log("\n복호화된 답장:");
   console.log(decryptedReply);
@@ -70,11 +70,11 @@ function readReplyFromBob() {
   console.log(isSignatureValid ? "송신자 인증 성공" : "송신자 인증 실패");
 }
 
-async function main() {
+async function sendMessageToBob() {
   const bobPublicKey = readFileSync("keys/bob-public.pem", "utf-8");
   const alicePrivateKey = readFileSync("keys/alice-private.pem", "utf-8");
 
-  const plainText = await askQuestion("Bob에게 보낼 메시지를 입력하세요: ");
+  const plainText = await askQuestion("\nBob에게 보낼 메시지를 입력하세요: ");
 
   const aesKey = generateAESKey();
   const iv = generateIV();
@@ -99,22 +99,29 @@ async function main() {
 
   console.log("\n메시지 전송 완료");
   console.log("저장 위치: messages/alice-to-bob.json");
-  console.log("\n암호화된 메시지:");
-  console.log(encryptedMessage);
-  console.log("\n메시지 해시: ");
-  console.log(messageHash);
-  console.log("\n전자서명: ")
-  console.log(signature);
-
-  const shouldReadReply = await askQuestion(
-    "\nBob의 답장을 확인할까요? (y/n): "
-  );
-
-  if (shouldReadReply.toLowerCase() === "y") {
-    readReplyFromBob();
-  }
-
-  rl.close();
 }
 
-main();
+async function showMenu() {
+  while (true) {
+    console.log("\n===== Alice 메뉴 =====");
+    console.log("1. Bob 메시지 확인하기");
+    console.log("2. Bob에게 메시지 보내기");
+    console.log("3. 프로그램 종료");
+
+    const choice = await askQuestion("선택: ");
+
+    if (choice === "1") {
+      readMessageFromBob();
+    } else if (choice === "2") {
+      await sendMessageToBob();
+    } else if (choice === "3") {
+      console.log("\nAlice 프로그램을 종료합니다.");
+      rl.close();
+      break;
+    } else {
+      console.log("\n잘못된 선택입니다. 다시 선택해주세요.");
+    }
+  }
+}
+
+showMenu();
